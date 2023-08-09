@@ -942,7 +942,15 @@ workers:
     ## - for Kubernetes 1.22 and before: "autoscaling/v2beta2"
     ##
     apiVersion: autoscaling/v2
-
+  # If the worker stops responding for 5 minutes (5*60s) kill the
+  # worker and let Kubernetes restart it
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    timeoutSeconds: 20
+    failureThreshold: 5
+    periodSeconds: 60
+    command: ~
   ## configs for the celery worker Pods
   ##
   celery:
