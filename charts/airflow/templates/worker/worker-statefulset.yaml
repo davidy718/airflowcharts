@@ -150,6 +150,22 @@ spec:
                         time.sleep(10)
                         active_tasks = i.active()[local_celery_host]
           {{- end }}
+          {{- if .Values.workers.livenessProbe.enabled }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.workers.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.workers.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.workers.livenessProbe.failureThreshold }}
+            periodSeconds: {{ .Values.workers.livenessProbe.periodSeconds }}
+            exec:
+              command:
+                  {{- if .Values.workers.livenessProbe.command }}
+                  {{ toYaml .Values.workers.livenessProbe.command  | nindent 16 }}
+                  {{- else}}
+                  - sh
+                  - -c
+                  - CONNECTION_CHECK_MAX_COUNT=0 exec /entrypoint python -m celery --app airflow.executors.celery_executor.app inspect ping -d celery@$(hostname)
+                  {{- end }}
+          {{- end }}
           ports:
             - name: wlog
               containerPort: 8793
